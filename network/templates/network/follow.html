@@ -1,0 +1,62 @@
+{% extends "network/layout.html" %}
+{% load static %}
+
+{% block title %} 
+    {% if follow == "follower" %}
+        Followers of {{profile_owner.username}} 
+    {% else %} 
+        {{profile_owner.username}} follows
+    {% endif %}
+{% endblock %}
+
+{% block body %} 
+
+    <style>
+        h3{
+            margin-left:20px;
+        }
+        .follow-sec {
+            margin-left:20px;
+            font-size:30px;
+    }
+    </style>
+
+    {% csrf_token %}
+    <input type="hidden" name="csrfmiddlewaretoken" value="TokenValue">
+
+    {% if follow == "follower" %}
+        <h3> {{followers|length}} people follow {{profile_owner.username}} </h3>
+        <div class="follow-sec">
+        
+            {% for follower in followers %}
+                <li>
+                    <a href = "{% url 'profile' follower.username %}"> {{follower.username}} </a>  
+                </li>      
+            {% empty %}
+                {{profile_owner.username}} currently has no follower.
+            {% endfor %}
+            </div>
+    {% else %} 
+        <h3> {{profile_owner.username}} follows <span id="fo">{{followings|length}}</span> people </h3>
+        <div class="follow-sec">
+            {% for following in followings %} 
+                <div>
+                    <a href = "{% url 'profile' following.following.username %}">{{following.following.username}}</a>
+                    {% if is_owner %} 
+                    <input type='button' class="btn btn-primary" value="Unfollow">
+                    {% endif %}  
+                </div>
+            {% empty %}
+                {{profile_owner.username}} currently doesn't follow anyone.
+            {% endfor %}
+        </div>
+    {% endif %} 
+
+    
+{% endblock %} 
+
+{% block script %}
+
+    <script src="{% static 'network/follow.js' %}">
+    </script>
+{% endblock %}

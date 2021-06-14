@@ -1,0 +1,242 @@
+{% extends "network/layout.html" %}
+{% load static %}
+
+{% block title %}
+    {% if following_index %}
+        Following 
+    {% else %}
+        All Posts
+    {% endif %}
+{% endblock %}
+
+
+
+{% block body %}
+
+    <style>
+        
+        .with-border {
+            border: solid 1px rgb(230, 230, 230);
+            width: 80%;
+            margin-left: auto;
+            margin-right: auto;
+            padding:40px;
+        }
+        .profile-click:hover{
+            cursor:pointer;
+        }
+        .edit-form{
+            display: none;
+        }
+        .comment-form{
+            display: none;
+        }
+        .fa-heart-o {
+            color: red;
+            cursor: pointer;
+        }
+        .fa-heart{
+            color: red;
+            cursor: pointer;
+        }
+        .comment-dropdown{
+            display:none;
+        }
+        .pagination{
+            margin-top:30px;
+        }
+        .reply-comment{
+            background-color: rgb(206, 206, 206);
+        }
+        .bold-font{
+            font-weight: bold;
+        }
+
+
+    </style>
+
+    {% if following_index %}
+        <h2>Following</h2> 
+    {% else %}
+        <h2>All Posts</h2>
+    {% endif %}
+
+    <div id = "message-view">
+    </div>
+    {% csrf_token %}
+    <input type="hidden" name="csrfmiddlewaretoken" value="TokenValue">
+    {% if user.is_authenticated %}
+    <div class = "with-border">
+        <h3> New Post </h3>
+        
+        <form id = "new-post-form">
+
+            <textarea class="form-control" id="post-body" placeholder="Post your thoughts" ></textarea>
+            <input type="submit" class="btn btn-primary" value = "Submit">    
+        </form>
+
+    </div>
+    {% endif %}
+
+
+    {% for post in posts %}
+
+        <div class="with-border" data-id="{{post.id}}">
+
+            <ul>
+                <h4 class="profile-click" onclick="location.href=
+                        '{% url 'profile' post.user.username %}';">
+                    {{post.user.username}}
+                </h4>
+                <li>
+                    {{post.content}}
+                </li>
+            
+                <li>
+                    At {{post.timestamp}}
+                </li>
+            
+                <li>
+                    {% if not post.likes.all.0.liked_by.all %}
+                    <i class="fa fa-heart-o"> 0</i>
+                    {% else %}
+                    {% if user in post.likes.all.0.liked_by.all %}
+                    <i class="fa fa-heart"> {{post.likes.all.0.liked_by.count}}</i>
+                    {% else %}
+                    <i class="fa fa-heart-o"> {{post.likes.all.0.liked_by.count}}</i>
+                    {% endif %}
+                    {% endif %}
+                </li>
+            
+                {% if user.username == post.user.username %}
+                <li>
+                    <input type='button' class="btn btn-primary" value="Edit">
+                </li>
+                {% endif %}
+            
+                {% if user.is_authenticated %}
+                <li>
+                    <input type='button' class="btn btn-link" value="Comments">
+                    <input type='button' class="btn btn-outline-dark" value="Leave a comment">
+                </li>
+                {% endif %}
+            </ul>
+
+            <form class = "edit-form">
+
+    
+                <textarea class="form-control" id="edit-body">{{post.content}}</textarea>
+                <input type="submit" class="btn btn-primary" value="Save">
+               
+            </form>
+      
+            <form class="comment-form">
+                <textarea class="form-control" id="comment-body" placeholder="Post your comment"></textarea>
+                <input type="submit" class="btn btn-primary" value="Post">
+            </form>
+            
+            
+            <div class= "comment-dropdown">
+            {% for comment in post.comment.all reversed %}
+            <ul data-commentno="{{forloop.counter0}}">
+                <li>
+                    <hr>
+                </li>               
+                <li>
+                    <span class="bold-font">{{comment.posted_by}}:</span> {{comment.content}}
+                </li>
+                <li>
+                    At {{comment.timestamp}}
+                    <input type="button" class="btn btn-outline-primary" data-commentid="{{comment.id}}" value="Reply">
+                </li>
+               
+                {% if comment.linked_comment %}
+                <ul class="reply-comment">
+                    <li>
+                        Replying <span class="bold-font">{{comment.linked_comment.posted_by}}:</span> {{comment.linked_comment.content}}
+                    </li>
+                    <li>
+                        --- {{comment.linked_comment.timestamp}}
+                    </li>
+                </ul>
+                {% endif %}
+
+            </ul>
+            {% empty %}
+                <ul>
+                    <li>
+                        No comment yet, share your thought!
+                    </li>
+                </ul>
+            {% endfor %}
+            </div>
+
+            
+
+        </div>
+
+    {% endfor %}
+
+
+
+    <nav aria-label="Page navigation example">
+        <ul class="pagination pagination-lg justify-content-center">
+
+            {% if posts.has_previous %}
+
+            <li class = "page-item">
+                <a class="page-link" aria-label="Previous" href="?page={{ posts.previous_page_number }}" >Previous</a>
+            </li>               
+            
+            {% endif %}
+
+            {% if cur_page > 3 %} 
+                <li class = "page-item">
+                    <a class="page-link" href="?page=1">1</a>
+                </li>
+                <li class = "page-item">
+                    <a class="page-link">...</a> 
+                </li>
+            {% endif %}
+
+            {% for i in range %}
+                {% if i == cur_page %}
+                    <li class = "page-item active">
+                    <a class="page-link" href="?page={{i}}">{{i}}</a>
+                    </li>
+                {% else %}
+                    <li class = "page-item">
+                    <a class="page-link" href="?page={{i}}">{{i}}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+
+            {% if not see_last %} 
+                <li class = "page-item">
+                    <a class="page-link">...</a> 
+                </li>
+                
+                <li class = "page-item">
+                    <a class="page-link" href="?page={{ posts.paginator.num_pages }}">{{last_page}}</a>
+                </li>
+            {% endif %}
+            
+            
+ 
+            {% if posts.has_next %}
+            <li class = "page-item">
+                <a class="page-link" aria-label="Next" href="?page={{ posts.next_page_number }}">Next</a>
+            </li>
+            {% endif %}
+
+               
+
+        </ul>
+    </nav>
+
+
+{% endblock %}
+
+{% block script %}
+    <script src="{% static 'network/index.js' %}"></script>
+{% endblock %}

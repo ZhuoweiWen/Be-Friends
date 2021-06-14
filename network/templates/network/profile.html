@@ -1,0 +1,163 @@
+{% extends "network/layout.html" %}
+{% load static %}
+
+{% block title %}
+{% if is_owner %}
+My Profile
+
+{% else %}
+Profile of {{profile_owner.username}}
+{% endif %}
+{% endblock %} 
+
+{% block body %}
+
+<style>
+
+    .with-border {
+        border: solid 1px rgb(230, 230, 230);
+        width: 80%;
+        margin-left: auto;
+        margin-right: auto;
+        padding:40px;
+    }
+    .follow-sec{
+        margin-left:20px;
+        cursor:pointer;
+    }
+    .pagination{
+        margin-top:30px;
+    }
+    hr{
+        width:300px;
+        margin-left:0px;
+    }
+
+
+</style>
+
+
+
+
+
+{% if is_owner %}
+    <h2> My Profile</h2>
+
+{% else %}
+    <h2> Profile of <span id='name'>{{profile_owner.username}}</span></h2>
+{% endif %}
+
+
+<div class='follow-sec'>
+    <hr>
+    <h3 onclick="location.href=
+    '{% url 'follow_page' profile_owner.username 'follower' %}';" id="fo"> Followers: {{follower|length}}</h3>
+    <hr>
+    <h3 onclick="location.href=
+    '{% url 'follow_page' profile_owner.username 'following' %}';"> Followings: {{following|length}}</h3>
+
+    <hr>
+    {% if user.is_authenticated and not is_owner %}
+
+    {% if is_following %}
+    <input type='button' class="btn btn-primary" value="Unfollow">
+    {% else %}
+    <input type='button' class="btn btn-primary" value="Follow">
+    {% endif %}
+    {% endif %}
+</div>
+
+
+
+
+
+
+{% csrf_token %}
+<input type="hidden" name="csrfmiddlewaretoken" value="TokenValue">
+
+{% for post in posts %}
+
+        <div class = "with-border">
+            <h4> {{post.user.username}} </h4>
+
+            <li>
+                {{post.content}}
+            </li>
+
+
+            <li>
+                Posted at: {{post.timestamp}}
+            </li>
+            <li>
+                {{post.likes.liked_by.length}}
+            </li>
+        </div>
+{% empty %} 
+        <h3> {{profile_owner.username}} currently has no post</h3>
+{% endfor %}
+
+<nav aria-label="Page navigation example">
+    <ul class="pagination pagination-lg justify-content-center">
+
+        {% if posts.has_previous %}
+
+        <li class = "page-item">
+            <a class="page-link" aria-label="Previous" href="?page={{ posts.previous_page_number }}" >Previous</a>
+        </li>               
+        
+        {% endif %}
+
+        {% if cur_page > 3 %} 
+            <li class = "page-item">
+                <a class="page-link" href="?page=1">1</a>
+            </li>
+            <li class = "page-item">
+                <a class="page-link">...</a> 
+            </li>
+        {% endif %}
+
+        {% for i in range %}
+            {% if i == cur_page %}
+                <li class = "page-item active">
+                <a class="page-link" href="?page={{i}}">{{i}}</a>
+                </li>
+            {% else %}
+                <li class = "page-item">
+                <a class="page-link" href="?page={{i}}">{{i}}</a>
+                </li>
+            {% endif %}
+        {% endfor %}
+
+        {% if not see_last %} 
+            <li class = "page-item">
+                <a class="page-link">...</a> 
+            </li>
+            
+            <li class = "page-item">
+                <a class="page-link" href="?page={{ posts.paginator.num_pages }}">{{last_page}}</a>
+            </li>
+        {% endif %}
+        
+        
+
+        {% if posts.has_next %}
+        <li class = "page-item">
+            <a class="page-link" aria-label="Next" href="?page={{ posts.next_page_number }}">Next</a>
+        </li>
+        {% endif %}
+
+           
+
+    </ul>
+</nav>
+
+
+
+
+{% endblock %}
+
+{% block script %}
+
+    <script src="{% static 'network/profile.js' %}">
+    </script>
+{% endblock %}
