@@ -23,6 +23,9 @@ class Comment(models.Model):
     linked_post = models.ForeignKey(Post, related_name = "comment", on_delete=models.CASCADE)
     timestamp = models.DateTimeField(auto_now_add=True)
 
+    def is_valid_reply(self):
+        return self.linked_post == self.linked_comment.linked_post
+
 class Follow(models.Model):
     following = models.ForeignKey(User, related_name = "my_follower", on_delete=models.CASCADE)
     followee = models.ManyToManyField(User)

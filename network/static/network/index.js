@@ -55,7 +55,7 @@ function new_post() {
 
   //Get content of user post
   const content = document.querySelector('#post-body').value;
-    
+ 
   //Handle csrf token and request
   const csrftoken = document.querySelector('input[name="csrfmiddlewaretoken"]').value
   const request = new Request(
@@ -79,7 +79,7 @@ function new_post() {
 
       
   })
-}
+} 
 
 //Function for displaying the edit form
 //@param event the current event
