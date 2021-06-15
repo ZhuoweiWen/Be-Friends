@@ -1,3 +1,6 @@
+/*  Script for follower_page that display all the follower the user
+    has or all the people the user follows*/
+
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('input[type=button]').forEach
     (element => element.addEventListener('click', event => {
@@ -7,11 +10,17 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-
+// Function for handling follow request
+// @param the current event
 function follow(event){
 
+    //Get the name of profile owner
     const profile_name = event.target.parentElement.children[0].innerHTML;
+
+    //Get how many people the user is following
     const count = document.querySelector('#fo').innerHTML;
+
+    //csrftoken and request
     const csrftoken = document.querySelector('input[name="csrfmiddlewaretoken"]').value
     const request = new Request(
         '/follow',
@@ -26,17 +35,19 @@ function follow(event){
     })
     .then(response => response.text())
     .then(result => {
-        //To do" Change button text when followed and unfollowed"
+        //Change button text when followed and unfollowed
         console.log(result);
         const parsed = JSON.parse(result)
         if (parsed.message === "Unfollowed."){
-
+            //update button value
             event.target.value = "Follow";
+            //Update count
             document.querySelector('#fo').innerHTML=`${count_follower(false, count)}`
         }
         else if (parsed.message === "Followed."){
-
+            //Update button value
            event.target.value = "Unfollow";
+           //Update count
             document.querySelector('#fo').innerHTML=`${count_follower(true, count)}`
         }
     })

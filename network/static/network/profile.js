@@ -1,3 +1,5 @@
+// Script for handling profile page user interface
+
 document.addEventListener('DOMContentLoaded', () => {
     if (document.querySelector('input[type=button]') != null) {
         document.querySelector('input[type=button]').addEventListener('click', event => {
@@ -9,11 +11,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 function follow(){
-    
+    //Get profile owner name
     const profile_name = document.querySelector('#name').innerHTML;
 
+    //Get follower count
     const count = parseInt(document.querySelector('#fo').innerHTML.split(':')[1]);
 
+    //Handlee csrf token and request
     const csrftoken = document.querySelector('input[name="csrfmiddlewaretoken"]').value
     const request = new Request(
         '/follow',
@@ -28,16 +32,17 @@ function follow(){
     })
     .then(response => response.text())
     .then(result => {
-        //To do" Change button text when followed and unfollowed"
+        //Change button value when followed and unfollowed"
         console.log(result);
+        //parse returned result
         const parsed = JSON.parse(result)
         if (parsed.message === "Unfollowed."){
-
+            //Change button text and update count
             document.querySelector('input[type=button]').value = "Follow";
             document.querySelector('#fo').innerHTML=`Follower: ${count_follower(false, count)}`
         }
         else if (parsed.message === "Followed."){
-
+            //Change button text and update count
             document.querySelector('input[type=button]').value = "Unfollow";
             document.querySelector('#fo').innerHTML=`Follower: ${count_follower(true, count)}`
         }
